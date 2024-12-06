@@ -49,7 +49,14 @@
         </form>
     {% endif %}
 
-    <!-- Display the Response -->
+    <!-- Display the Question and Response -->
+    {% if submitted_question %}
+        <h2>Question:</h2>
+        <div id="submitted_question">
+            <p>{{ submitted_question }}</p>
+        </div>
+    {% endif %}
+    
     {% if response %}
         <h2>Response:</h2>
         <div id="response">

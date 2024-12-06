@@ -8,14 +8,10 @@ import PyPDF2
 genai.configure(api_key="AIzaSyB1OC8atXoq3yloVL31BRJC2mUqO3NsJRI")
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Index view for the homepage
+# Define the index view
 def index(request):
-    """
-    Render the homepage for the application.
-    """
-    return render(request, 'score/index.html')
+    return render(request, 'score/index.html', {})
 
-# Process user input, handle file upload or reuse
 def process_input(request):
     if request.method == 'POST':
         # Check if the user wants to delete the file
@@ -72,7 +68,8 @@ def process_input(request):
         return render(request, 'score/index.html', {
             'response': response.text,
             'file_uploaded': os.path.basename(file_path),
-            'keep_file': True
+            'keep_file': True,
+            'submitted_question': question  # Pass the submitted question to the template
         })
 
     return render(request, 'score/index.html', {})
