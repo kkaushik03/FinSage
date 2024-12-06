@@ -3,28 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload and Process</title>
+    <title>File Upload and Ask a Question</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'score/css/styles.css' %}">
 </head>
 <body>
     <h1>Upload File and Ask a Question</h1>
-    <form action="/process_input/" method="post" enctype="multipart/form-data">
+
+    <!-- Main Form -->
+    <form action="{% url 'index' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
+
+        <!-- Question Input -->
         <label for="question">Enter your question:</label><br>
         <input type="text" id="question" name="question" required><br><br>
 
-        <label for="file">Upload a file:</label><br>
-        <input type="file" id="file" name="file" required><br><br>
+        <!-- File Upload Section -->
+        {% if keep_file %}
+            <p><strong>Using file:</strong> {{ file_uploaded }}</p>
+            <input type="hidden" name="keep_file" value="no">
+        {% else %}
+            <label for="file">Upload a file:</label><br>
+            <input type="file" id="file" name="file" required><br>
+            <input type="hidden" name="keep_file" value="no">
+        {% endif %}
 
+        <!-- Option to Keep the File -->
+        <label>
+            <input type="checkbox" name="keep_file" value="yes">
+            Keep using the same file
+        </label><br><br>
+
+        <!-- Submit Button -->
         <button type="submit">Submit</button>
     </form>
 
+    <!-- Display Response -->
     {% if response %}
-    <h2>Response:</h2>
-    <div id="response">
-        <p>{{ response }}</p>
-    </div>
+        <h2>Response:</h2>
+        <div id="response">
+            <p>{{ response }}</p>
+        </div>
     {% endif %}
 </body>
 </html>
