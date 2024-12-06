@@ -10,15 +10,11 @@
 <body>
     <h1>Upload File and Ask a Question</h1>
 
-    <!-- Main Form for Asking a Question -->
+    <!-- Main Form -->
     <form action="/process_input/" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-
-        <!-- Question Input -->
-        <label for="question">Enter your question:</label><br>
-        <input type="text" id="question" name="question" required><br><br>
-
-        <!-- File Upload or Keep Same File -->
+        
+        <!-- Display file information -->
         {% if file_uploaded %}
             <p><strong>Using file:</strong> {{ file_uploaded }}</p>
             <input type="hidden" name="keep_file" value="yes">
@@ -27,6 +23,10 @@
             <input type="file" id="file" name="file" required><br>
             <input type="hidden" name="keep_file" value="no">
         {% endif %}
+
+        <!-- Question Input -->
+        <label for="question">Enter your question:</label><br>
+        <input type="text" id="question" name="question" required><br><br>
 
         <!-- Keep File Checkbox -->
         {% if file_uploaded %}
@@ -49,18 +49,15 @@
         </form>
     {% endif %}
 
-    <!-- Display the Question and Response -->
-    {% if submitted_question %}
-        <h2>Question:</h2>
-        <div id="submitted_question">
-            <p>{{ submitted_question }}</p>
-        </div>
-    {% endif %}
-    
-    {% if response %}
-        <h2>Response:</h2>
-        <div id="response">
-            <p>{{ response }}</p>
+    <!-- Display Questions and Answers -->
+    {% if qa_history %}
+        <h2>Question History:</h2>
+        <div>
+            {% for qa in qa_history %}
+                <p><strong>Q:</strong> {{ qa.question }}</p>
+                <p><strong>A:</strong> {{ qa.response }}</p>
+                <hr>
+            {% endfor %}
         </div>
     {% endif %}
 </body>

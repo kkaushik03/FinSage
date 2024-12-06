@@ -1,31 +1,39 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 import os
-import google.generativeai as genai
 import PyPDF2
 
-# Configure the Gemini API
-genai.configure(api_key="AIzaSyB1OC8atXoq3yloVL31BRJC2mUqO3NsJRI")
-model = genai.GenerativeModel("gemini-1.5-flash")
+from django.shortcuts import render
 
-# Define the index view
 def index(request):
-    return render(request, 'score/index.html', {})
+    """Render the index page."""
+    return render(request, 'score/index.html', {'qa_history': []})
+
+# Dummy model generation (replace with real AI service if available)
+def generate_answer(file_content, question):
+    """Simulate an AI response based on the file content and question."""
+    return f"Response to: {question}"
+
 
 def process_input(request):
     if request.method == 'POST':
-        # Check if the user wants to delete the file
+        # Handle file deletion
         if 'delete_file' in request.POST:
             if 'file_path' in request.session:
                 file_path = request.session.pop('file_path')
                 if os.path.exists(file_path):
                     os.remove(file_path)
-            return render(request, 'score/index.html', {'response': "File deleted successfully.", 'file_uploaded': None})
+            request.session.pop('qa_history', None)  # Clear question-answer history
+            return render(request, 'score/index.html', {
+                'response': "File deleted successfully.",
+                'file_uploaded': None,
+                'qa_history': []
+            })
 
-        # Get the question from the form
+        # Retrieve the question
         question = request.POST.get('question', '')
 
-        # Check if the user wants to keep using the previous file
+        # Check whether to keep using the same file
         keep_file = request.POST.get('keep_file', 'no') == 'yes'
 
         # Handle file upload or reuse
@@ -34,7 +42,10 @@ def process_input(request):
         else:
             uploaded_file = request.FILES.get('file', None)
             if not uploaded_file:
-                return render(request, 'score/index.html', {'response': "No file uploaded."})
+                return render(request, 'score/index.html', {
+                    'response': "No file uploaded.",
+                    'qa_history': request.session.get('qa_history', [])
+                })
 
             # Save the uploaded file temporarily
             os.makedirs('temp', exist_ok=True)
@@ -46,7 +57,7 @@ def process_input(request):
             # Save the file path in the session
             request.session['file_path'] = file_path
 
-        # Determine the file type and read content
+        # Process the file to extract content
         try:
             if file_path.endswith('.txt'):
                 with open(file_path, 'r') as file:
@@ -56,20 +67,31 @@ def process_input(request):
                     reader = PyPDF2.PdfReader(file)
                     file_content = ''.join(page.extract_text() for page in reader.pages)
             else:
-                return render(request, 'score/index.html', {'response': "Unsupported file type."})
+                return render(request, 'score/index.html', {
+                    'response': "Unsupported file type.",
+                    'qa_history': request.session.get('qa_history', [])
+                })
         except Exception as e:
-            return render(request, 'score/index.html', {'response': f"Error processing file: {e}"})
+            return render(request, 'score/index.html', {
+                'response': f"Error processing file: {e}",
+                'qa_history': request.session.get('qa_history', [])
+            })
 
-        # Generate a response using the Gemini API
-        prompt = f"File Content:\n{file_content}\n\nQuestion: {question}"
-        response = model.generate_content(prompt)
+        # Generate the response
+        response = generate_answer(file_content, question)
 
-        # Pass the response and file details to the template
+        # Update question-answer history
+        qa_history = request.session.get('qa_history', [])
+        qa_history.append({'question': question, 'response': response})
+        request.session['qa_history'] = qa_history
+
+        # Render the template with updated history
         return render(request, 'score/index.html', {
-            'response': response.text,
+            'response': response,
             'file_uploaded': os.path.basename(file_path),
-            'keep_file': True,
-            'submitted_question': question  # Pass the submitted question to the template
+            'qa_history': qa_history,
+            'keep_file': True
         })
 
-    return render(request, 'score/index.html', {})
+    # Render initial template
+    return render(request, 'score/index.html', {'qa_history': []})
