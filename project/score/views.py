@@ -107,7 +107,7 @@ def process_input(request):
 
         # Generate a response using the Gemini API
         try:
-            prompt = f"Please summarize the following financial document in 2-3 concise sentences:\n{file_content}\n\nQuestion: {question}"
+            prompt = f"Please answer the following financial question using document and general knowledge in 2-3 concise sentences:\n{file_content}\n\nQuestion: {question}"
             response = model.generate_content(prompt)
         except Exception as e:
             logging.error(f"Error generating response: {e}")

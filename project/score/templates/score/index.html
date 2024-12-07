@@ -89,14 +89,27 @@
             background-color: #1e1e1e; /* Match chatbot container for consistency */
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
             gap: 10px;
+            flex-wrap: wrap; /* Allow wrapping */
         }
 
-        .form-container input[type="text"],
-        .form-container input[type="file"] {
-            flex: 1;
+        .file-label {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background-color: #8fbc8f; /* Green for buttons */
+            color: white;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+            max-width: 100px; /* Limit width for long file names */
+            overflow: hidden;
+            word-break: break-word; /* Allow text to wrap */
+            white-space: normal; /* Allow multiline text */
+        }
+
+        .form-container input[type="text"] {
+            flex-grow: 1; /* Take up all available space */
             padding: 10px;
             border: 1px solid #8fbc8f;
             border-radius: 20px;
@@ -117,8 +130,13 @@
             cursor: pointer;
         }
 
-        .form-container button:hover {
+        .form-container button:hover,
+        .file-label:hover {
             background-color: #5e8c5e; /* Slightly darker green on hover */
+        }
+
+        .form-container .file-input {
+            display: none; /* Hide the default file input */
         }
 
         .delete-file-button {
@@ -168,11 +186,10 @@
             <form action="/process_input/" method="post" enctype="multipart/form-data" style="flex: 1; display: flex; gap: 10px;">
                 {% csrf_token %}
 
-                <!-- File Upload -->
-                {% if not file_uploaded %}
-                    <input type="file" name="file" id="file" placeholder="Upload a file">
-                {% endif %}
-
+                <!-- Custom File Upload Button -->
+                <label for="file" class="file-label">File +</label>
+                <input type="file" name="file" id="file" class="file-input">
+                
                 <!-- Question Input -->
                 <input type="text" name="question" id="question" placeholder="Type your message..." required>
 
@@ -200,6 +217,20 @@
         // Auto-scroll chat window to the bottom
         const chatWindow = document.getElementById("chat-window");
         chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        // Update the label when a file is selected
+        const fileInput = document.getElementById('file');
+        const fileLabel = document.querySelector('.file-label');
+
+        fileInput?.addEventListener('change', function () {
+            let fileName = fileInput.files[0]?.name || 'File +';
+            
+            // Truncate the file name if it's longer than 10 characters
+            if (fileName.length > 10) {
+                fileName = fileName.substring(0, 5) + '...';
+            }
+            
+            fileLabel.textContent = fileName;
+        });
     </script>
 </body>
-</html>
