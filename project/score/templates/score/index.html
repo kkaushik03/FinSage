@@ -3,62 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload and Ask a Question</title>
+    <title>Chat with Sage</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'score/css/styles.css' %}">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0; /* Light text for contrast */
+        }
+
+        .chatbot-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #1e1e1e; /* Dark gray for chatbot container */
+            border: 1px solid #8fbc8f; /* Green border */
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            background-color: #2e4a35; /* Dark green header */
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            position: relative;
+        }
+
+        .header img {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 40px;
+        }
+
+        .chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #121212; /* Match body background for seamless look */
+        }
+
+        .chat-window .message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 75%;
+        }
+
+        .chat-window .user {
+            background-color: #8fbc8f; /* Green for user messages */
+            color: #ffffff;
+            align-self: flex-end;
+            text-align: right;
+        }
+
+        .chat-window .sage {
+            background-color: #2e4a35; /* Dark green for Sage's messages */
+            color: #ffffff;
+            align-self: flex-start;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-window .sage img {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+        }
+
+        .form-container {
+            padding: 15px;
+            background-color: #1e1e1e; /* Match chatbot container for consistency */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .form-container input[type="text"],
+        .form-container input[type="file"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #8fbc8f;
+            border-radius: 20px;
+            background-color: #2e2e2e; /* Darker input background */
+            color: #e0e0e0;
+        }
+
+        .form-container input::placeholder {
+            color: #a0a0a0; /* Placeholder text color */
+        }
+
+        .form-container button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background-color: #8fbc8f; /* Green for buttons */
+            color: white;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #5e8c5e; /* Slightly darker green on hover */
+        }
+
+        .delete-file-button {
+            background-color: #d9534f; /* Red for delete */
+            color: #ffffff;
+        }
+
+        .delete-file-button:hover {
+            background-color: #c9302c;
+        }
+    </style>
 </head>
 <body>
-    <h1>Upload File and Ask a Question</h1>
+    <div class="chatbot-container">
+        <!-- Header -->
+        <div class="header">
+            <img src="{% static 'score/images/logo.png' %}" alt="Sage Logo">
+            Chat with Sage
+        </div>
 
-    <!-- Main Form -->
-    <form action="/process_input/" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        
-        <!-- Display file information -->
-        {% if file_uploaded %}
-            <p><strong>Using file:</strong> {{ file_uploaded }}</p>
-            <input type="hidden" name="keep_file" value="yes">
-        {% else %}
-            <label for="file">Upload a file:</label><br>
-            <input type="file" id="file" name="file" required><br>
-            <input type="hidden" name="keep_file" value="no">
-        {% endif %}
-
-        <!-- Question Input -->
-        <label for="question">Enter your question:</label><br>
-        <input type="text" id="question" name="question" required><br><br>
-
-        <!-- Keep File Checkbox -->
-        {% if file_uploaded %}
-            <label>
-                <input type="checkbox" name="keep_file" value="yes" checked>
-                Keep using the same file
-            </label><br><br>
-        {% endif %}
-
-        <!-- Submit Button -->
-        <button type="submit">Submit</button>
-    </form>
-
-    <!-- Delete File Button -->
-    {% if file_uploaded %}
-        <form action="/process_input/" method="post" style="margin-top: 10px;">
-            {% csrf_token %}
-            <input type="hidden" name="delete_file" value="true">
-            <button type="submit">Delete File</button>
-        </form>
-    {% endif %}
-
-    <!-- Display Questions and Answers -->
-    {% if qa_history %}
-        <h2>Question History:</h2>
-        <div>
-            {% for qa in qa_history %}
-                <p><strong>Q:</strong> {{ qa.question }}</p>
-                <p><strong>A:</strong> {{ qa.response }}</p>
-                <hr>
+        <!-- Chat Window -->
+        <div class="chat-window" id="chat-window">
+            <!-- Previous Responses -->
+            {% for item in previous_responses %}
+                <div class="message user">
+                    <strong>You:</strong> {{ item.question }}
+                </div>
+                <div class="message sage">
+                    <img src="{% static 'score/images/logo.png' %}" alt="Sage Logo">
+                    <span><strong>Sage:</strong> {{ item.response }}</span>
+                </div>
             {% endfor %}
         </div>
-    {% endif %}
+
+        <!-- Input Form -->
+        <div class="form-container">
+            <form action="/process_input/" method="post" enctype="multipart/form-data" style="flex: 1; display: flex; gap: 10px;">
+                {% csrf_token %}
+
+                <!-- File Upload -->
+                {% if not file_uploaded %}
+                    <input type="file" name="file" id="file" placeholder="Upload a file">
+                {% endif %}
+
+                <!-- Question Input -->
+                <input type="text" name="question" id="question" placeholder="Type your message..." required>
+
+                <!-- Submit Button -->
+                <button type="submit">Send</button>
+
+                <!-- Keep File Checkbox -->
+                {% if file_uploaded %}
+                    <input type="hidden" name="keep_file" value="yes">
+                {% endif %}
+            </form>
+
+            <!-- Delete File Button -->
+            {% if file_uploaded %}
+                <form action="/process_input/" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_file" value="true">
+                    <button type="submit" class="delete-file-button">Delete File</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Auto-scroll chat window to the bottom
+        const chatWindow = document.getElementById("chat-window");
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    </script>
 </body>
 </html>
