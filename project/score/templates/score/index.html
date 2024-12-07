@@ -1,10 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat with Sage</title>
-    {% load static %}
     <style>
         /* General Styles */
         body {
@@ -141,11 +141,21 @@
 
         <!-- Chat Window -->
         <div class="chat-window" id="chat-window">
+            <!-- Initial Message -->
+            {% if previous_responses|length == 0 %}
+                <div class="message sage">
+                    <img src="{% static 'score/images/logo.png' %}" alt="Sage Logo">
+                    <span><strong>Sage:</strong> How can I help you today?</span>
+                </div>
+            {% endif %}
+
             <!-- Previous Responses -->
             {% for item in previous_responses %}
-                <div class="message user">
-                    <strong>You:</strong> {{ item.question }}
-                </div>
+                {% if item.question %}
+                    <div class="message user">
+                        <strong>You:</strong> {{ item.question }}
+                    </div>
+                {% endif %}
                 <div class="message sage">
                     <img src="{% static 'score/images/logo.png' %}" alt="Sage Logo">
                     <span><strong>Sage:</strong> {{ item.response }}</span>

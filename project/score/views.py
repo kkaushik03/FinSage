@@ -15,8 +15,19 @@ logging.basicConfig(level=logging.DEBUG)
 # Define the index view
 def index(request):
     """Render the main chatbot interface."""
+    # Check if session already contains previous responses
+    previous_responses = request.session.get('previous_responses', [])
+
+    # Add the initial message if it's the first visit
+    if not previous_responses:
+        previous_responses.append({
+            'question': None,
+            'response': "How can I help you today?"
+        })
+        request.session['previous_responses'] = previous_responses
+
     return render(request, 'score/index.html', {
-        'previous_responses': request.session.get('previous_responses', []),
+        'previous_responses': previous_responses,
         'file_uploaded': request.session.get('file_path', None)
     })
 
