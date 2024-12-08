@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="icon" href="{% static 'score/images/logo.png' %}" type="image/png">
     <title>Chat with Sage</title>
     <style>
         /* General Styles */
@@ -20,8 +22,7 @@
             flex-direction: column;
             justify-content: space-between;
             height: 100vh;
-            max-width: 800px;
-            margin: 0 auto;
+            margin-left: 220px; /* Shift content to the left of the sidebar (200px + some spacing) */
             background-color: #1e1e1e; /* Dark gray for chatbot container */
             border: 1px solid #8fbc8f; /* Green border */
             border-radius: 10px;
@@ -58,14 +59,16 @@
             margin: 10px 0;
             padding: 10px 15px;
             border-radius: 10px;
-            max-width: 75%;
+            /*max-width: 75%;*/
         }
 
         .chat-window .user {
-            background-color: #8fbc8f; /* Green for user messages */
+            background-color: #7ba37b; /* Green for user messages */
             color: #ffffff;
             align-self: flex-end;
             text-align: right;
+            width: fit-content;
+            margin-left: auto;
         }
 
         .chat-window .sage {
@@ -76,6 +79,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            max-width: 75%;
         }
 
         .chat-window .sage img {
@@ -147,10 +151,81 @@
         .delete-file-button:hover {
             background-color: #c9302c;
         }
+
+        /* The sidebar menu */
+        .sidenav {
+        height: 100%;
+        width: 200px; 
+        position: fixed; 
+        z-index: 1; 
+        top: 0; 
+        left: 0; 
+        background-color: #121212; 
+        overflow-x: hidden;
+        padding: 0; 
+        display: flex;
+        flex-direction: column; 
+        align-items: center;
+        justify-content: center; 
+        }
+
+        .sidenav a {
+        width: 100%; /* Make the links span the full width of the sidebar */
+        padding: 10px 0; /* Equal top and bottom padding */
+        text-decoration: none; /* Remove underlines */
+        font-size: 20px; /* Adjust font size */
+        color: #818181; /* Link color */
+        text-align: center; /* Center text inside links */
+        display: flex;
+        align-items: center; 
+        justify-content: center;
+        margin-left: 20px;
+        }
+        
+        .sidenav .h3 {
+            text-align: center; /* Center text inside links */
+        display: flex;
+        align-items: center; 
+        justify-content: center;
+        }
+
+        .sidenav a:hover {
+        color: #ffffff; 
+        }
+
+        /* Style page content */
+        .chat-container {
+        margin-right: 200px; /* Same as the width of the sidebar */
+        }
+
+        .message-form {
+        margin-right: 200px; /* Same as the width of the sidebar */
+        }
+
+        /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+        @media screen and (max-height: 450px) {
+        .sidenav {
+            padding-top: 15px;
+        }
+        .sidenav a {
+            font-size: 18px;
+        }
+        }
+
     </style>
 </head>
 <body>
+
+    <!-- Sidebar -->
+  <div class="sidenav">
+    <h3>Previous Files</h3>
+    <a href="">CreditReport.pdf</a>
+    <a href="">TaxReturn2024.pdf</a>
+    <a href="">Mortgage2024.pdf</a>
+  </div>
+
     <div class="chatbot-container">
+        
         <!-- Header -->
         <div class="header">
             <img src="{% static 'score/images/logo.png' %}" alt="Sage Logo">
@@ -187,11 +262,11 @@
                 {% csrf_token %}
 
                 <!-- Custom File Upload Button -->
-                <label for="file" class="file-label">File +</label>
+                <label for="file" class="file-label">Upload File +</label>
                 <input type="file" name="file" id="file" class="file-input">
                 
                 <!-- Question Input -->
-                <input type="text" name="question" id="question" placeholder="Type your message..." required>
+                <input type="text" name="question" id="question" placeholder="Ask a question..." required>
 
                 <!-- Submit Button -->
                 <button type="submit">Send</button>
@@ -214,7 +289,6 @@
     </div>
 
     <script>
-        // Auto-scroll chat window to the bottom
         const chatWindow = document.getElementById("chat-window");
         chatWindow.scrollTop = chatWindow.scrollHeight;
 
