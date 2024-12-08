@@ -238,7 +238,7 @@
             {% if previous_responses|length == 0 %}
                 <div class="message sage">
                     <img src="{% static 'score/images/logo.png' %}" alt="Sage Logo">
-                    <span><strong>Sage:</strong> How can I help you today?</span>
+                    <span><strong>Sage:</strong> Upload a financial file below and ask me anything about it!</span>
                 </div>
             {% endif %}
 
@@ -262,7 +262,7 @@
                 {% csrf_token %}
 
                 <!-- Custom File Upload Button -->
-                <label for="file" class="file-label">Upload File +</label>
+                <label for="file" class="file-label">Upload File</label>
                 <input type="file" name="file" id="file" class="file-input">
                 
                 <!-- Question Input -->
