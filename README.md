@@ -27,8 +27,10 @@ python3 manage.py runserver
 
 Finsage/project
 * contains all code files
+
 Finsage/project/finsage
 * contains code for Django application to run
+
 Finsage/project/score
 * contains the UI templates in index.html. The structure goes from CSS at the beginning, HTML in the middle, to JavaScript near the end of the file.
 * contains the AI code in view.py. The process_input function is run whenever the user enters input, either by uploading a file or by submitting a question.
